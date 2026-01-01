@@ -1,4 +1,4 @@
-import { Pressable, Text, View } from "react-native";
+import { Pressable, Text, View, ActivityIndicator } from "react-native";
 import { ReactNode } from "react";
 import clsx from "clsx";
 
@@ -12,6 +12,7 @@ type ButtonProps = {
   icon?: ReactNode;
   onPress?: () => void;
   disabled?: boolean;
+  loading?: boolean;
 };
 
 export function Button({
@@ -21,16 +22,18 @@ export function Button({
   icon,
   onPress,
   disabled = false,
+  loading = false,
 }: ButtonProps) {
   const isError = type === "error";
+  const isDisabled = disabled || loading;
 
   return (
     <Pressable
       onPress={onPress}
-      disabled={disabled}
+      disabled={isDisabled}
       className={clsx(
         "flex-row items-center justify-center gap-2 rounded-xl px-5 py-3",
-        disabled && "opacity-50",
+        isDisabled && "opacity-50",
 
         // Variants & Types
         variant === "solid" &&
@@ -45,19 +48,34 @@ export function Button({
           (isError ? "active:bg-red-500/10" : "active:bg-blue-500/10")
       )}
     >
-      {icon && <View>{icon}</View>}
-      <Text
-        className={clsx(
-          "text-sm font-bold uppercase",
-          variant === "solid"
-            ? "text-white"
-            : isError
-            ? "text-red-500"
-            : "text-blue-500"
-        )}
-      >
-        {title}
-      </Text>
+      {loading ? (
+        <ActivityIndicator
+          size="small"
+          color={
+            variant === "solid"
+              ? "#fff"
+              : isError
+              ? "#ef4444" // Tailwind red-500
+              : "#3b82f6" // Tailwind blue-500
+          }
+        />
+      ) : (
+        <>
+          {icon && <View>{icon}</View>}
+          <Text
+            className={clsx(
+              "text-sm font-bold uppercase",
+              variant === "solid"
+                ? "text-white"
+                : isError
+                ? "text-red-500"
+                : "text-blue-500"
+            )}
+          >
+            {title}
+          </Text>
+        </>
+      )}
     </Pressable>
   );
 }

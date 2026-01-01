@@ -1,27 +1,43 @@
-import { FlatList } from "react-native";
+import { FlatList, View } from "react-native";
 import React from "react";
 import PostItem from "./PostItem";
-import { useRemovePost } from "../store/store";
 import { Post } from "../types/posts.interface";
+import { deletePost } from "../api/postsApi";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import Loading from "./Loading";
 
-interface Props{
-  posts: Post[]
+interface Props {
+  posts: Post[];
 }
 
 const PostList = ({ posts }: Props) => {
-  const removePost = useRemovePost();
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: (id: string) => deletePost(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['posts'] });
+    },
+  });
+
   const handleDelete = (id: string) => {
-    removePost(id);
+    mutation.mutate(id);
   };
 
+  
   return (
     <FlatList
       data={posts}
       keyExtractor={(post) => post.id}
       initialNumToRender={10}
       removeClippedSubviews
+      ListHeaderComponent={
+        <View>
+          {mutation.isPending &&  <Loading />}
+        </View>
+      }
       renderItem={({ item }) => (
-         <PostItem
+        <PostItem
           title={item.title}
           description={item.description}
           onDelete={() => handleDelete(item.id)}

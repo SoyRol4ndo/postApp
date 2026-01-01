@@ -1,17 +1,27 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useQuery } from "@tanstack/react-query";
+
 import Header from "../src/components/Header";
 import InputSearch from "../src/components/InputSearch";
 import PostList from "../src/components/PostList";
-import { NewPostSheet } from "../src/components/NewPostSheet";
+import  NewPostSheet  from "../src/components/NewPostSheet";
+import EmptyList from "../src/components/EmptyList";
+import Loading from "../src/components/Loading";
+
 import { Post } from "../src/types/posts.interface";
-import { usePosts } from "../src/store/store";
+import { listPosts } from "../src/api/postsApi";
 
 const HomePage = () => {
-  
+
   const { top } = useSafeAreaInsets();
-  const posts = usePosts();
+
+  const {data: posts, isLoading} = useQuery( {
+    queryKey: ['posts'],
+    queryFn: () => listPosts(),
+    staleTime: 1000 * 60 * 5  // 5 min
+  })
 
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -31,7 +41,7 @@ const HomePage = () => {
 
   const filteredPosts = useMemo(
     () =>
-      posts.filter((post: Post) =>
+      posts?.filter((post: Post) =>
         post.title.toLowerCase().includes(debouncedSearch.toLowerCase())
       ),
     [posts, debouncedSearch]
@@ -40,6 +50,12 @@ const HomePage = () => {
   const handleClose = () => {
     setOpen(false);
   };
+
+  if(isLoading){
+    return (
+      <Loading />
+    )
+  }
 
   return (
     <View
@@ -52,10 +68,13 @@ const HomePage = () => {
       {/* Input to search */}
       <InputSearch search={search} setSearch={setSearch} />
 
-      {/* Post list */}
-      <PostList
-        posts={filteredPosts}
-      />
+      {
+        filteredPosts?.length === 0
+        ? (<EmptyList />)
+        : (<PostList
+            posts={filteredPosts ?? []}
+          />)
+      }
 
       <NewPostSheet
         open={open}
