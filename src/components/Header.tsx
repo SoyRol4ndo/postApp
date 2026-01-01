@@ -26,4 +26,4 @@ const Header = ({ onAdd }: Props) => {
   );
 };
 
-export default Header;
+export default React.memo(Header);

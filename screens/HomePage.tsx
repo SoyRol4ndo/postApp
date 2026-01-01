@@ -10,8 +10,8 @@ import  NewPostSheet  from "../src/components/NewPostSheet";
 import EmptyList from "../src/components/EmptyList";
 import Loading from "../src/components/Loading";
 
-import { Post } from "../src/types/posts.interface";
 import { listPosts } from "../src/api/postsApi";
+import { usePosts } from "../src/hooks/usePosts";
 
 const HomePage = () => {
 
@@ -23,29 +23,9 @@ const HomePage = () => {
     staleTime: 1000 * 60 * 5  // 5 min
   })
 
+  const { search, setSearch, filteredPosts } = usePosts({ posts: posts ?? [] })
+
   const [open, setOpen] = useState(false);
-  const [search, setSearch] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState(search);
-
-  // Efecto debounce para la busqueda
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedSearch(search);
-    }, 400); // 400ms debounce
-
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [search]);
-
-
-  const filteredPosts = useMemo(
-    () =>
-      posts?.filter((post: Post) =>
-        post.title.toLowerCase().includes(debouncedSearch.toLowerCase())
-      ),
-    [posts, debouncedSearch]
-  );
 
   const handleClose = () => {
     setOpen(false);
