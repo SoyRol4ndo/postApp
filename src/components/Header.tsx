@@ -3,7 +3,11 @@ import { View, Text } from "react-native";
 import { Plus } from "lucide-react-native";
 import { IconButton } from "../ui/IconButton";
 
-const Header = ({ onAdd }: { onAdd: () => void }) => {
+interface Props{
+  onAdd: () => void 
+}
+
+const Header = ({ onAdd }: Props) => {
   return (
     <View className="flex flex-row justify-between mt-5">
       <View>

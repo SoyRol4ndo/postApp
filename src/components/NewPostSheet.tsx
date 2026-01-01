@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   Modal,
   Pressable,
@@ -10,42 +10,50 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Input } from "../ui/Input";
 import { Button } from "../ui/Button";
-import { X } from "lucide-react-native";
+import { useAddPost } from "../store/store";
 
-interface Props  {
+interface Props {
   open: boolean;
   onClose: () => void;
-  onCreate: (data: { name: string; description: string }) => void;
-  initialName?: string;
-  initialDescription?: string;
-};
+}
 
-export function NewPostSheet({
-  open,
-  onClose,
-  onCreate,
-  initialName = "",
-  initialDescription = "",
-}: Props) {
+export function NewPostSheet({ open, onClose }: Props) {
+
   const insets = useSafeAreaInsets();
-  const [name, setName] = useState(initialName);
-  const [description, setDescription] = useState(initialDescription);
+  const [name, setName] = useState<string>("");
+  const [description, setDescription] = useState<string>("");
+  const addPost = useAddPost();
 
-  useEffect(() => {
-    if (open) {
-      setName(initialName);
-      setDescription(initialDescription);
-    }
-  }, [open, initialName, initialDescription]);
 
   const handleCreate = () => {
-    onCreate({ name: name.trim(), description: description.trim() });
+    if (!name?.trim() || !description?.trim()) {
+      return;
+    }
+    addPost(
+      { 
+        id: Date.now().toString(),
+        title: name?.trim(), 
+        description: description?.trim() 
+      }
+  );
+   onCancel()
   };
 
+  const onCancel = () => {
+    setName("");
+    setDescription("");
+    onClose();
+  }
+
   return (
-    <Modal visible={open} transparent animationType="slide" onRequestClose={onClose}>
+    <Modal
+      visible={open}
+      transparent
+      animationType="slide"
+      onRequestClose={onCancel}
+    >
       {/* Backdrop */}
-      <Pressable className="flex-1 bg-black/30" onPress={onClose} />
+      <Pressable className="flex-1 bg-black/30" onPress={onCancel} />
 
       {/* Sheet */}
       <KeyboardAvoidingView
@@ -62,9 +70,11 @@ export function NewPostSheet({
           </View>
 
           {/* Title */}
-          <Text className="text-3xl font-extrabold text-gray-900">Nuevo Post</Text>
+          <Text className="text-3xl font-extrabold text-gray-900">
+            Nuevo Post
+          </Text>
 
-          {/* Field: Name */}
+          {/* Field: Nombre */}
           <Input
             value={name}
             onChangeText={setName}
@@ -74,7 +84,7 @@ export function NewPostSheet({
             containerClassName="mt-5"
           />
 
-          {/* Field: Description */}
+          {/* Field: Descripcion */}
           <Input
             multiline
             value={description}
@@ -87,17 +97,17 @@ export function NewPostSheet({
           {/* Divider */}
           <View className="mt-6 h-px bg-gray-200" />
 
-          {/* Actions */}
+          {/* Botones de accion */}
           <View className="mt-4 flex-row gap-4 justify-evenly">
             <Button
-              onPress={onClose}
+              onPress={onCancel}
               title="Cancel"
               variant="outline"
               type="error"
             />
             <Button
               onPress={handleCreate}
-              disabled={!name.trim()}
+              disabled={!name?.trim() || !description?.trim()}
               title={"Create"}
             />
           </View>
